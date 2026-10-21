@@ -1,0 +1,13 @@
+description = """
+Planificación clásica (STRIPS, ADL, costes de acción y predicados derivados): los tres
+problemas más pequeños de cada colección.
+"""
+description-en = """
+Classical planning (STRIPS, ADL, action costs and derived predicates): the three
+smallest problems of each collection.
+"""
+
+[[select]]
+types = ["classical"]
+per-collection = 3
+order = "smallest"

@@ -1,0 +1,22 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Car (no drag)"
+description = "Un coche que acelera y frena para recorrer una distancia y parar a tiempo: la velocidad y la posición cambian con un proceso, y un evento rompe el motor si se fuerza."
+description-en = "A car that accelerates and brakes to cover a distance and stop in time: speed and position change through a process, and an event blows the engine if it is pushed too hard."
+
+[origin]
+source = "SMTPlan (benchmarks)"
+repository = "https://github.com/KCL-Planning/SMTPlan"
+commit = "b085bd7"
+path = "benchmarks/car_nodrag"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "car_domain_nodrag.pddl"
+problems = "car_prob{nn}.pddl"
+instances = 10
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["p*.pddl"]
+description = "Los problemas daban valor inicial a las funciones sin argumentos sin paréntesis (`(= d 0)`). El dominio las declara y las usa como `(d)`, así que se ha escrito `(= (d) 0)` (también `a` y `v`)."
+description-en = "The problems gave initial values to the functions without arguments without parentheses (`(= d 0)`). The domain declares and uses them as `(d)`, so `(= (d) 0)` has been written (also for `a` and `v`)."

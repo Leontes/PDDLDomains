@@ -1,0 +1,17 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Scanalyzer 3D (Sequential, Satisficing)"
+description = "Cintas transportadoras que llevan plantas por un escáner para analizarlas."
+description-en = "Conveyor belts taking plants through a scanner to analyze them."
+authors = "Malte Helmert and Hauke Lasinger"
+
+[origin]
+source = "IPC 2011"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2011/domains/scanalyzer-3d-sequential-satisficing"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20

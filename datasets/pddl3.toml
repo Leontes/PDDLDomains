@@ -1,0 +1,17 @@
+description = """
+PDDL 3: problemas con preferencias o con restricciones de trayectoria (los cinco primeros de
+cada colección).
+"""
+description-en = """
+PDDL 3: problems with preferences or trajectory constraints (the first five of each
+collection).
+"""
+
+[[select]]
+types = ["preferences"]
+per-collection = 5
+
+[[select]]
+types = ["constraints"]
+exclude-types = ["preferences"]
+per-collection = 5

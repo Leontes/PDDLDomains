@@ -1,0 +1,11 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Greenhouse"
+description = "Invernadero creado a mano para reunir casos límite de PDDL 2.1 temporal que no aparecen en ningún benchmark público encontrado (ni en las IPC ni en los de COLIN/OPTIC o VAL): efectos continuos dentro de `forall` y de `when`, efectos condicionales con condiciones `over all`, `?duration` no fijo en efectos `at start`, una duración cuyo máximo depende de una variable que cambia de forma continua y un efecto condicional sobre una variable continua."
+description-en = "A greenhouse made by hand to gather edge cases of temporal PDDL 2.1 that do not appear in any public benchmark found (neither in the IPC ones nor in those of COLIN/OPTIC or VAL): continuous effects inside `forall` and `when`, conditional effects with `over all` conditions, a non-fixed `?duration` in `at start` effects, a duration whose maximum depends on a continuously changing variable, and a conditional effect on a continuous variable."
+notes = "No es un benchmark oficial. Sus planes se validan con VAL como los del resto."
+notes-en = "It is not an official benchmark. Its plans are validated with VAL like the rest."
+
+[origin]
+source = "Propio (creado a mano para el catálogo)"
+source-en = "Own (made by hand for the catalog)"

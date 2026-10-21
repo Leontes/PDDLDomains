@@ -1,0 +1,31 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Pathways (Preferences (Complex))"
+description = "Rutas bioquímicas: reacciones para sintetizar sustancias; acciones durativas, cantidades numéricas y preferencias."
+description-en = "Biochemical pathways: reactions to synthesize substances; durative actions, numeric quantities and preferences."
+authors = "Yannis Dimopoulos, Alfonso Gerevini, and Alessandro Saetti"
+notes = "Se han copiado las instancias 1 a 20 de las 30 de la colección original."
+notes-en = "Instances 1 to 20 of the 30 in the original collection have been copied."
+
+[origin]
+source = "IPC 2006"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2006/domains/pathways-preferences-complex"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 30
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "Usa `not` en las precondiciones sin declarar `:negative-preconditions`. Se ha añadido."
+description-en = "It uses `not` in preconditions without declaring `:negative-preconditions`. It has been added."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["p08.pddl", "p09.pddl", "p12.pddl", "p14.pddl", "p16.pddl", "p17.pddl", "p18.pddl", "p19.pddl", "p20.pddl"]
+description = "Daban dos valores iniciales a la misma función. Se queda el último, que es el que usa VAL."
+description-en = "They gave two initial values to the same function. The last one is kept, which is the one VAL uses."

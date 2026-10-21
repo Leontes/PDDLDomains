@@ -1,0 +1,16 @@
+description = """
+PDDL 2.1/2.2 temporal sin PDDL 3 ni PDDL+: cinco problemas elegidos al azar (semilla fija) de
+cada colección con acciones durativas, de como mucho 50 KB.
+"""
+description-en = """
+Temporal PDDL 2.1/2.2 without PDDL 3 or PDDL+: five problems picked at random (fixed seed)
+from each collection with durative actions, of at most 50 KB.
+"""
+
+[[select]]
+types = ["temporal"]
+exclude-types = ["preferences", "constraints", "pddlplus"]
+max-kb = 50
+per-collection = 5
+order = "random"
+seed = 2026

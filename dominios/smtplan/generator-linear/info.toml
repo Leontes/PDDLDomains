@@ -1,0 +1,22 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Generator (linear)"
+description = "El generador con repostaje lineal: PDDL 2.1 con efectos continuos lineales, sin procesos ni eventos."
+description-en = "The generator with linear refuelling: PDDL 2.1 with linear continuous effects, without processes or events."
+
+[origin]
+source = "SMTPlan (benchmarks)"
+repository = "https://github.com/KCL-Planning/SMTPlan"
+commit = "b085bd7"
+path = "benchmarks/generator_linear"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "gen_linear_domain.pddl"
+problems = "gen_linear_prob{nn}.pddl"
+instances = 8
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "No declaraba `:continuous-effects`. Se ha añadido."
+description-en = "It did not declare `:continuous-effects`. It has been added."

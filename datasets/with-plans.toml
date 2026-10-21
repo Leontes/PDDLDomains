@@ -1,0 +1,10 @@
+description = """
+Problemas con plan de referencia (de la IPC 2023): para probar VAL o comparar la calidad de
+los planes.
+"""
+description-en = """
+Problems with a reference plan (from IPC 2023): to test VAL or compare plan quality.
+"""
+
+[[select]]
+with-plan = true

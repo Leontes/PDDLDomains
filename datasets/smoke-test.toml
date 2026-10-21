@@ -1,0 +1,12 @@
+description = """
+Prueba de humo: el problema más pequeño de cada colección del catálogo. Sirve para comprobar
+rápidamente que un planificador o un parser lee todo el catálogo.
+"""
+description-en = """
+Smoke test: the smallest problem of each collection of the catalog. Useful to check
+quickly that a planner or a parser reads the whole catalog.
+"""
+
+[[select]]
+per-collection = 1
+order = "smallest"

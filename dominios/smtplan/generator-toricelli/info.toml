@@ -1,0 +1,34 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Generator (Torricelli)"
+description = "El generador con repostaje según la ley de Torricelli: efectos continuos no lineales y duraciones que dependen del estado."
+description-en = "The generator with refuelling following Torricelli's law: non-linear continuous effects and state-dependent durations."
+
+[origin]
+source = "SMTPlan (benchmarks)"
+repository = "https://github.com/KCL-Planning/SMTPlan"
+commit = "b085bd7"
+path = "benchmarks/generator_toricelli"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "gen_toricelli_domain.pddl"
+problems = "gen_toricelli_prob{nn}.pddl"
+instances = 9
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "No declaraba `:continuous-effects`. Se ha añadido."
+description-en = "It did not declare `:continuous-effects`. It has been added."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl", "p*.pddl"]
+description = "Renombrado como generator-nonlinear: el dominio se llamaba `generator2` y los problemas eran de `generator`."
+description-en = "Renamed like generator-nonlinear: the domain was named `generator2` and the problems were for `generator`."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl"]
+description = "`? g` y `? duration` tenían un espacio tras la interrogación."
+description-en = "`? g` and `? duration` had a space after the question mark."

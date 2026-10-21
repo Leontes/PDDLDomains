@@ -1,0 +1,28 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Generator (non-linear)"
+description = "El generador con repostaje no lineal: PDDL 2.1 con efectos continuos no lineales."
+description-en = "The generator with non-linear refuelling: PDDL 2.1 with non-linear continuous effects."
+
+[origin]
+source = "SMTPlan (benchmarks)"
+repository = "https://github.com/KCL-Planning/SMTPlan"
+commit = "b085bd7"
+path = "benchmarks/generator_nonlinear"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "gen_nonlinear_domain.pddl"
+problems = "gen_nonlinear_prob{nn}.pddl"
+instances = 8
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "No declaraba `:continuous-effects`. Se ha añadido."
+description-en = "It did not declare `:continuous-effects`. It has been added."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl", "p*.pddl"]
+description = "Los problemas eran de un dominio `generator`, pero el dominio se llamaba `generator2`; como `generator` es además un tipo, dominio y problemas se han renombrado con el nombre de la colección."
+description-en = "The problems were for a domain `generator`, but the domain was named `generator2`; since `generator` is also a type, the domain and the problems have been renamed after the collection."

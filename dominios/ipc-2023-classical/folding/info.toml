@@ -1,0 +1,18 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Folding"
+description = "Plegar una cadena en una cuadrícula, rotándola por sus nodos, hasta que tome una forma dada."
+description-en = "Folding a string on a grid, rotating it at its nodes, until it takes a given shape."
+
+[origin]
+source = "IPC 2023 (classical, satisficing)"
+repository = "https://github.com/ipc2023-classical/ipc2023-dataset"
+commit = "1e29a0e"
+path = "sat/folding"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "p{nn}.pddl"
+plans = "p{nn}.plan"
+instances = 20
+homepage = "https://github.com/ipc2023-classical/domain-folding"

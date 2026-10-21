@@ -1,0 +1,17 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Gripper (Round 1, STRIPS)"
+description = "Un robot con dos pinzas lleva bolas de una habitación a otra."
+description-en = "A robot with two grippers carries balls from one room to another."
+authors = "Jana Koehler"
+
+[origin]
+source = "IPC 1998"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-1998/domains/gripper-round-1-strips"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20

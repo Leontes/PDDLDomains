@@ -1,0 +1,17 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Trucks (Preferences (Complex))"
+description = "Trucks con acciones durativas, preferencias y restricciones de trayectoria."
+description-en = "Trucks with durative actions, preferences and trajectory constraints."
+authors = "Yannis Dimopoulos, Alfonso Gerevini, and Alessandro Saetti"
+
+[origin]
+source = "IPC 2006"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2006/domains/trucks-preferences-complex"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20

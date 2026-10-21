@@ -1,0 +1,18 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Ricochet Robots"
+description = "El juego Ricochet Robots: robots que se deslizan en una dirección hasta chocar con una barrera o con otro robot."
+description-en = "The Ricochet Robots game: robots sliding in one direction until they hit a barrier or another robot."
+
+[origin]
+source = "IPC 2023 (classical, satisficing)"
+repository = "https://github.com/ipc2023-classical/ipc2023-dataset"
+commit = "1e29a0e"
+path = "sat/ricochet-robots"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "p{nn}.pddl"
+plans = "p{nn}.plan"
+instances = 20
+homepage = "https://github.com/ipc2023-classical/domain-ricochet-robots"

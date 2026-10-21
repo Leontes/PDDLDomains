@@ -1,0 +1,34 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Generator (events)"
+description = "Un generador que tiene que funcionar un tiempo seguido mientras se reposta desde depósitos: una acción durativa, un proceso no lineal y dos eventos."
+description-en = "A generator that must run for a period of time while being refuelled from tanks: one durative action, one non-linear process and two events."
+
+[origin]
+source = "SMTPlan (benchmarks)"
+repository = "https://github.com/KCL-Planning/SMTPlan"
+commit = "b085bd7"
+path = "benchmarks/generator_events"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "gen_events_domain.pddl"
+problems = "gen_events_prob{nn}.pddl"
+instances = 8
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "Usa un efecto continuo (`#t`) en una acción durativa sin declarar `:continuous-effects` (solo `:time`, que es para procesos y eventos). Se ha añadido."
+description-en = "It uses a continuous effect (`#t`) in a durative action without declaring `:continuous-effects` (only `:time`, which is for processes and events). It has been added."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl"]
+description = "En el proceso `refuelling`, el guion estaba pegado al tipo (`?t -tank`). Se ha separado."
+description-en = "In the `refuelling` process, the dash was glued to the type (`?t -tank`). It has been separated."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["p*.pddl"]
+description = "Los problemas no daban valor inicial a `(ptime ?t)`, que usa el ritmo del proceso `refuelling`: VAL rechazaba cualquier plan que repostara y sin repostar no había plan. Se ha añadido `(= (ptime <tanque>) 0)` para cada tanque (SMTPlan debía de suponer 0)."
+description-en = "The problems gave no initial value to `(ptime ?t)`, which the rate of the `refuelling` process uses: VAL rejected any plan that refuelled, and without refuelling there was no plan. `(= (ptime <tank>) 0)` has been added for each tank (SMTPlan must have assumed 0)."

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Caché del análisis del catálogo (se rehace sola)
+.cache/
+
+# Herramientas externas compiladas en local (VAL, pddl-generators) y repositorios de origen
+tools/
+
+# Salidas locales: datasets exportados, problemas generados, planes
+salidas/
+
+# Configuración local del editor
+.vscode/
+
+# Uso privado: documentos y datasets internos (se quedan en local)
+privado/

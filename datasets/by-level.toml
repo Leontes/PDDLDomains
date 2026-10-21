@@ -1,0 +1,15 @@
+description = """
+Los dos problemas más pequeños de cada colección, agrupados por nivel de versión de PDDL (ver
+'pddldomains levels'). Exportado, queda levelN/<origen>/<colección>/. Con --max-level N, lo que
+tiene que resolver un planificador que llega a ese nivel.
+"""
+description-en = """
+The two smallest problems of each collection, grouped by PDDL version level (see
+'pddldomains levels'). Exported, it becomes levelN/<origin>/<collection>/. With --max-level N,
+what a planner supporting up to that level must solve.
+"""
+
+[[select]]
+per-collection = 2
+order = "smallest"
+group = "level{level}/{id}"

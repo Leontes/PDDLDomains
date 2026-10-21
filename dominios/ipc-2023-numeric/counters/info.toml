@@ -1,0 +1,24 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Counters"
+description = "Contadores que se incrementan y decrementan hasta cumplir unas desigualdades entre ellos."
+description-en = "Counters that are incremented and decremented until some inequalities between them hold."
+authors = "Enrico Scala y Miquel Ramirez (a partir del dominio de Guillem Francès y Hector Geffner)"
+authors-en = "Enrico Scala and Miquel Ramirez (based on the domain by Guillem Francès and Hector Geffner)"
+
+[origin]
+source = "IPC 2023 (numeric)"
+repository = "https://github.com/ipc2023-numeric/ipc2023-dataset"
+commit = "0799944"
+path = "counters"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/pfile{n}.pddl"
+instances = 20
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "La línea `:requirements` venía comentada, aunque el dominio usa tipos y fluentes numéricos, y tampoco incluía `:numeric-fluents`. Se ha descomentado y se le ha añadido `:numeric-fluents`."
+description-en = "The `:requirements` line was commented out, although the domain uses types and numeric fluents, and it did not include `:numeric-fluents` either. It has been uncommented and `:numeric-fluents` added."

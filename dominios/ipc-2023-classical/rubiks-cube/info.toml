@@ -1,0 +1,20 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Rubik's Cube"
+description = "El cubo de Rubik, con efectos condicionales."
+description-en = "The Rubik's cube, with conditional effects."
+notes = "En el repositorio, sat/rubiks-cube es un enlace a opt/rubiks-cube: las pistas óptima y satisfacible usan las mismas instancias."
+notes-en = "In the repository, sat/rubiks-cube is a link to opt/rubiks-cube: the optimal and satisficing tracks use the same instances."
+
+[origin]
+source = "IPC 2023 (classical, satisficing)"
+repository = "https://github.com/ipc2023-classical/ipc2023-dataset"
+commit = "1e29a0e"
+path = "opt/rubiks-cube"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "p{nn}.pddl"
+plans = "p{nn}.plan"
+instances = 20
+homepage = "https://github.com/ipc2023-classical/domain-rubiks-cube"

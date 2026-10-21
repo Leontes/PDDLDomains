@@ -1,0 +1,29 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Tidybot (Sequential, Satisficing)"
+description = "Robots domésticos que recogen objetos y los dejan en su sitio, con un carrito."
+description-en = "Household robots picking up objects and putting them in their place, with a cart."
+authors = "Bhaskara Marthi"
+
+[origin]
+source = "IPC 2011"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2011/domains/tidybot-sequential-satisficing"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "Usa `not` sin declarar `:negative-preconditions`. Se ha añadido."
+description-en = "It uses `not` without declaring `:negative-preconditions`. It has been added."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["p*.pddl"]
+description = "El objeto `cart` se llamaba igual que su tipo; pasa a `cart0`."
+description-en = "The object `cart` had the same name as its type; it becomes `cart0`."

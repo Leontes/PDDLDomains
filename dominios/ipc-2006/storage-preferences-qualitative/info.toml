@@ -1,0 +1,23 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Storage (Preferences (Qualitative))"
+description = "Grúas que mueven cajas entre almacenes y contenedores, con preferencias en el objetivo y restricciones de trayectoria (`sometime`, `at-most-once`), sin tiempo."
+description-en = "Hoists moving crates between depots and containers, with goal preferences and trajectory constraints (`sometime`, `at-most-once`), without time."
+authors = "Alfonso Gerevini and Alessandro Saetti"
+
+[origin]
+source = "IPC 2006"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2006/domains/storage-preferences-qualitative"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl"]
+description = "Declaraba el tipo `area` dos veces: `area - object` en la primera línea de `:types` y `area crate - surface` en la última. La primera no aporta nada (todo tipo desciende de `object`), así que se ha quitado. Los planes valen lo mismo para VAL."
+description-en = "It declared the type `area` twice: `area - object` in the first line of `:types` and `area crate - surface` in the last one. The first one adds nothing (every type descends from `object`), so it has been removed. Plans are equally valid for VAL."

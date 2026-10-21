@@ -1,0 +1,29 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Floor Tile (Sequential, Satisficing)"
+description = "Robots que pintan las baldosas de un suelo sin pisar las ya pintadas."
+description-en = "Robots painting the tiles of a floor without stepping on the painted ones."
+authors = "Tomás de la Rosa"
+
+[origin]
+source = "IPC 2011"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2011/domains/floor-tile-sequential-satisficing"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "Usa `total-cost` sin declarar `:action-costs`. Se ha añadido."
+description-en = "It uses `total-cost` without declaring `:action-costs`. It has been added."
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl"]
+description = "Las acciones `up`, `down`, `left` y `right` se llamaban igual que sus predicados; pasan a `move-up`, `move-down`, `move-left` y `move-right`."
+description-en = "The actions `up`, `down`, `left` and `right` had the same names as their predicates; they become `move-up`, `move-down`, `move-left` and `move-right`."

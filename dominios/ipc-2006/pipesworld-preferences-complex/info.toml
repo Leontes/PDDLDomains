@@ -1,0 +1,19 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Pipesworld (Preferences (Complex))"
+description = "Transporte de derivados del petróleo por una red de oleoductos; acciones durativas y preferencias."
+description-en = "Transporting oil derivatives through a pipeline network; durative actions and preferences."
+authors = "Frederico Liporace and Jörg Hoffmann"
+notes = "La colección original solo tiene 18 instancias."
+notes-en = "The original collection only has 18 instances."
+
+[origin]
+source = "IPC 2006"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2006/domains/pipesworld-preferences-complex"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 18

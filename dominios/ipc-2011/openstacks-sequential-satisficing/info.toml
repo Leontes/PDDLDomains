@@ -1,0 +1,16 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Openstacks (Sequential, Satisficing)"
+description = "Producción de pedidos minimizando las pilas abiertas a la vez. Un dominio por problema."
+description-en = "Producing orders while minimizing the number of stacks open at the same time. One domain per problem."
+
+[origin]
+source = "IPC 2011"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2011/domains/openstacks-sequential-satisficing"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domains/domain-{n}.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20

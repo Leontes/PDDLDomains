@@ -1,0 +1,22 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Woodworking (Sequential, Satisficing)"
+description = "Una carpintería: cortar, cepillar, lijar y barnizar piezas con distintas máquinas."
+description-en = "A woodworking shop: cutting, planing, sanding and varnishing parts with several machines."
+
+[origin]
+source = "IPC 2011"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2011/domains/woodworking-sequential-satisficing"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["p10.pddl"]
+description = "Tenía una línea `- board` sin objetos delante; se ha quitado."
+description-en = "It had a `- board` line with no objects before it; it has been removed."

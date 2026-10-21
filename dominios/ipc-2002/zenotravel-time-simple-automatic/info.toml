@@ -1,0 +1,22 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "ZenoTravel (Time (Simple), For Automatic Planners)"
+description = "Transporte de personas en avión entre ciudades; acciones durativas de duración fija."
+description-en = "Transporting people by plane between cities; durative actions with fixed durations."
+
+[origin]
+source = "IPC 2002"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2002/domains/zenotravel-time-simple-automatic"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 20
+
+[[errata]]
+kind = "requirements"  # (*)
+files = ["domain.pddl"]
+description = "Los problemas tienen `(:metric minimize (total-time))`, que necesita `:numeric-fluents`, y el dominio no lo declaraba. Se ha añadido."
+description-en = "The problems have `(:metric minimize (total-time))`, which needs `:numeric-fluents`, and the domain did not declare it. It has been added."

@@ -1,0 +1,25 @@
+# Collection card (see docs/en/catalog.md) · Ficha de la colección (ver docs/es/catalogo.md).
+
+title = "Satellite (Time, Time Windows, STRIPS)"
+description = "Satélites que orientan sus instrumentos para tomar imágenes y enviarlas a tierra, solo posible en ventanas de tiempo (literales iniciales temporizados)."
+description-en = "Satellites that point their instruments to take images and send them to the ground, only possible within time windows (timed initial literals)."
+authors = "Jörg Hoffmann (based on the IPC 2002 satellite domain by Maria Fox and Derek Long)"
+notes = "Las instancias 21 a 36 de la colección original (de 90 KB a 3 MB) no se han copiado."
+notes-en = "Instances 21 to 36 of the original collection (from 90 KB to 3 MB) have not been copied."
+
+[origin]
+source = "IPC 2004"
+repository = "https://github.com/potassco/pddl-instances"
+commit = "cf19edf"
+path = "ipc-2004/domains/satellite-time-time-windows-strips"
+# Source files: {n} is the problem number and {nn} the same with two digits.
+# Ficheros de origen: {n} es el número del problema y {nn}, el mismo con dos cifras.
+domain = "domain.pddl"
+problems = "instances/instance-{n}.pddl"
+instances = 36
+
+[[errata]]
+kind = "other"  # (‡)
+files = ["domain.pddl", "p*.pddl"]
+description = "El dominio se llamaba igual que uno de sus tipos (`satellite`). Se ha renombrado a `satellite-time-windows` en el dominio y en el `(:domain …)` de los problemas. Los tipos y los planes no cambian."
+description-en = "The domain had the same name as one of its types (`satellite`). It has been renamed to `satellite-time-windows` in the domain and in the `(:domain …)` of the problems. The types and the plans do not change."
