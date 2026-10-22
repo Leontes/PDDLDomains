@@ -1,13 +1,13 @@
 """Generador genérico por paseo aleatorio, para cualquier colección clásica.
 
-La explicación está en :class:`RandomWalkGenerator` (es lo que muestra ``--params``). El
-simulador (:class:`_Simulator`) no admite predicados derivados, fluentes numéricos ni
-acciones durativas.
+La explicación está en :class:`RandomWalkGenerator` (es lo que muestra ``--params``). Las
+acciones se aplican con :class:`pddldomains.simulator.Simulator`; aquí solo se buscan al azar
+argumentos con los que sean aplicables.
 """
 
 import random
 from collections.abc import Iterator
-from itertools import product
+from pathlib import Path
 from typing import Any
 
 from pddldomains.analysis import Analyzer
@@ -18,162 +18,27 @@ from pddldomains.pddl import (
     Domain,
     Operator,
     Problem,
-    TypedName,
     read_domain,
     read_problem,
     read_text,
     typed_list,
 )
-from pddldomains.sexpr import SExpr, SList, is_number, to_text
-
-type Atom = tuple[str, ...]
-type Binding = dict[str, str]
+from pddldomains.sexpr import SExpr, SList, to_text
+from pddldomains.simulator import Atom, Binding, SimulationError, Simulator, State
 
 #: Expansiones como mucho al buscar unos argumentos aplicables para un operador.
 SEARCH_BUDGET = 20000
-_NUMERIC_EFFECTS = frozenset({"increase", "decrease", "assign", "scale-up", "scale-down"})
 
 
-class Unsupported(GeneratorError):
-    """El dominio usa algo que el simulador no admite."""
-
-
-class _Simulator:
-    """Aplica acciones de un dominio STRIPS/ADL sobre conjuntos de átomos."""
-
-    def __init__(self, domain: Domain, problem: Problem) -> None:
-        self.domain = domain
-        parents: dict[str, set[str]] = {}
-        for typed in domain.types:
-            parents.setdefault(typed.name, set()).update(
-                typed.type if isinstance(typed.type, tuple) else (typed.type,)
-            )
-        self.objects: dict[str, set[str]] = {}  # tipo -> objetos
-        for typed in (*domain.constants, *problem.objects):
-            for type_ in self._ancestors(typed.type, parents):
-                self.objects.setdefault(type_, set()).add(typed.name)
-        self.all_objects = sorted({o.name for o in (*domain.constants, *problem.objects)})
-        self.operators = [op for op in domain.operators if op.kind == "action"]
-        if len(self.operators) != len(domain.operators):
-            raise Unsupported(_("el dominio tiene acciones durativas, procesos o eventos"))
-        if domain.derived:
-            raise Unsupported(_("el dominio tiene predicados derivados"))
-        self.fluent_predicates = self._fluent_predicates()
-
-    @staticmethod
-    def _ancestors(type_: str | tuple[str, ...], parents: dict[str, set[str]]) -> set[str]:
-        pending = list(type_) if isinstance(type_, tuple) else [type_]
-        seen = {"object"}
-        while pending:
-            current = pending.pop()
-            if current not in seen:
-                seen.add(current)
-                pending.extend(parents.get(current, ()))
-        return seen
-
-    def objects_of(self, type_: str | tuple[str, ...]) -> list[str]:
-        if isinstance(type_, tuple):
-            return sorted(set().union(*(self.objects.get(t, set()) for t in type_)))
-        return sorted(self.objects.get(type_, ())) if type_ != "object" else self.all_objects
-
-    def _fluent_predicates(self) -> set[str]:
-        result: set[str] = set()
-
-        def walk(node: SExpr) -> None:
-            if isinstance(node, SList) and node:
-                head = node[0]
-                if head in ("and", "not"):
-                    for child in node[1:]:
-                        walk(child)
-                elif head in ("forall", "when") and len(node) == 3:
-                    walk(node[2])
-                elif isinstance(head, str) and head not in _NUMERIC_EFFECTS:
-                    result.add(head)
-
-        for operator in self.operators:
-            walk(operator.fields.get(":effect", SList(0)))
-        return result
-
-    # --- Evaluación ----------------------------------------------------------------------
-
-    @staticmethod
-    def ground(node: SList, binding: Binding) -> Atom:
-        head = node[0]
-        assert isinstance(head, str)
-        return (head, *(binding.get(a, a) if isinstance(a, str) else to_text(a) for a in node[1:]))
-
-    def holds(self, node: SExpr, binding: Binding, state: set[Atom]) -> bool:
-        if not isinstance(node, SList):
-            raise Unsupported(_("fórmula no admitida: {node}", node=node))
-        if not node:
-            return True
-        head = node[0]
-        if head == "and":
-            return all(self.holds(child, binding, state) for child in node[1:])
-        if head == "or":
-            return any(self.holds(child, binding, state) for child in node[1:])
-        if head == "not":
-            return not self.holds(node[1], binding, state)
-        if head == "imply":
-            return not self.holds(node[1], binding, state) or self.holds(node[2], binding, state)
-        if head in ("exists", "forall"):
-            variables = typed_list(list(node[1]), [], 0) if isinstance(node[1], SList) else []
-            assignments = self._assignments(variables, binding)
-            check = (self.holds(node[2], b, state) for b in assignments)
-            return any(check) if head == "exists" else all(check)
-        if head == "=" and len(node) == 3:
-            left, right = (binding.get(a, a) if isinstance(a, str) else None for a in node[1:])
-            if left is None or right is None:
-                raise Unsupported(_("igualdad entre expresiones numéricas"))
-            return left == right
-        if head in ("<", ">", "<=", ">="):
-            raise Unsupported(_("condiciones numéricas"))
-        return self.ground(node, binding) in state
-
-    def _assignments(self, variables: list[TypedName], binding: Binding) -> Iterator[Binding]:
-        domains = [self.objects_of(v.type) for v in variables]
-        for values in product(*domains):
-            yield {**binding, **{v.name: value for v, value in zip(variables, values, strict=True)}}
-
-    def effects(
-        self, node: SExpr, binding: Binding, state: set[Atom], adds: set[Atom], deletes: set[Atom]
-    ) -> None:
-        if not isinstance(node, SList) or not node:
-            return
-        head = node[0]
-        if head == "and":
-            for child in node[1:]:
-                self.effects(child, binding, state, adds, deletes)
-        elif head == "not":
-            target = node[1]
-            if isinstance(target, SList):
-                deletes.add(self.ground(target, binding))
-        elif head == "forall":
-            variables = typed_list(list(node[1]), [], 0) if isinstance(node[1], SList) else []
-            for inner in self._assignments(variables, binding):
-                self.effects(node[2], inner, state, adds, deletes)
-        elif head == "when":
-            if self.holds(node[1], binding, state):
-                self.effects(node[2], binding, state, adds, deletes)
-        elif head in _NUMERIC_EFFECTS:
-            target = node[1]
-            if not (isinstance(target, SList) and target == ["total-cost"]):
-                raise Unsupported(_("efectos numéricos (que no son de total-cost)"))
-        else:
-            adds.add(self.ground(node, binding))
-
-    def apply(self, operator: Operator, binding: Binding, state: set[Atom]) -> set[Atom]:
-        adds: set[Atom] = set()
-        deletes: set[Atom] = set()
-        self.effects(operator.fields.get(":effect", SList(0)), binding, state, adds, deletes)
-        return (state - deletes) | adds
+class _Walker(Simulator):
+    """El simulador, con la búsqueda de acciones aplicables al azar."""
 
     # --- Búsqueda de argumentos aplicables ----------------------------------------------------
 
-    def applicable(
+    def find_binding(
         self,
         operator: Operator,
-        state: set[Atom],
+        state: State,
         by_predicate: dict[str, list[Atom]],
         rng: random.Random,
     ) -> Binding | None:
@@ -232,21 +97,24 @@ class _Simulator:
         return search({})
 
     def step(
-        self, state: set[Atom], visited: set[frozenset[Atom]], rng: random.Random
-    ) -> tuple[Operator, Binding, set[Atom]] | None:
-        """Una acción al azar aplicable en ``state`` (mejor si lleva a un estado nuevo)."""
+        self, state: State, visited: set[frozenset[Atom]], rng: random.Random
+    ) -> tuple[Operator, Binding, State] | None:
+        """Una acción al azar aplicable en ``state`` (mejor si lleva a un estado nuevo).
+
+        Los estados se distinguen por sus átomos: los valores numéricos (el coste) no cuentan.
+        """
         by_predicate: dict[str, list[Atom]] = {}
-        for atom in state:
+        for atom in state.facts:
             by_predicate.setdefault(atom[0], []).append(atom)
-        operators = list(self.operators)
+        operators = list(self.operators.values())
         rng.shuffle(operators)
         fallback = None
         for operator in operators:
-            binding = self.applicable(operator, state, by_predicate, rng)
+            binding = self.find_binding(operator, state, by_predicate, rng)
             if binding is None:
                 continue
-            successor = self.apply(operator, binding, state)
-            if frozenset(successor) not in visited:
+            successor = self.successor(operator, binding, state)
+            if successor.atoms not in visited:
                 return operator, binding, successor
             fallback = fallback or (operator, binding, successor)
         return fallback
@@ -290,12 +158,12 @@ def _variables_in(node: SExpr) -> set[str]:
 
 
 def _walk(
-    simulator: _Simulator, state: set[Atom], steps: int, rng: random.Random
-) -> tuple[list[set[Atom]], list[str]]:
+    simulator: _Walker, state: State, steps: int, rng: random.Random
+) -> tuple[list[State], list[str]]:
     """Un paseo de hasta ``steps`` acciones: los estados por los que pasa (empezando por
     ``state``) y las acciones. Se para antes si llega a un estado sin acciones aplicables."""
     states = [state]
-    visited = {frozenset(state)}
+    visited = {state.atoms}
     plan = []
     for _step in range(steps):
         result = simulator.step(state, visited, rng)
@@ -303,7 +171,7 @@ def _walk(
             break
         operator, binding, state = result
         states.append(state)
-        visited.add(frozenset(state))
+        visited.add(state.atoms)
         arguments = " ".join(binding[p.name] for p in operator.parameters)
         plan.append(f"({operator.name}{' ' + arguments if arguments else ''})")
     return states, plan
@@ -323,7 +191,7 @@ class RandomWalkGenerator(Generator):
     estado de la mitad pasa a ser el inicial.
 
     Admite STRIPS y ADL: tipos, negación, disyunción, cuantificadores, igualdad y efectos
-    condicionales; los costes de acción se ignoran al simular.
+    condicionales; los costes de acción no influyen en el paseo.
     """
 
     name = "random-walk"
@@ -370,14 +238,26 @@ class RandomWalkGenerator(Generator):
             base = min(collection.tasks, key=lambda t: t.problem.stat().st_size)
         domain = read_domain(read_text(base.domain))
         problem = read_problem(read_text(base.problem))
-        simulator = _Simulator(domain, problem)
-        initial: set[Atom] = set()
-        for fact in problem.init or ():
-            if not isinstance(fact, SList) or not fact or fact[0] in ("=", "not"):
-                continue  # valores numéricos (total-cost) y negaciones redundantes
-            if fact[0] == "at" and len(fact) == 3 and is_number(fact[1]):
-                raise Unsupported(_("literales iniciales temporizados"))
-            initial.add(simulator.ground(fact, {}))
+        try:
+            return self._generate(params, seed, name, base.id, domain, problem, base.domain)
+        except SimulationError as error:
+            raise GeneratorError(str(error)) from error
+
+    def _generate(
+        self,
+        params: dict[str, Any],
+        seed: int,
+        name: str,
+        base_id: str,
+        domain: Domain,
+        problem: Problem,
+        domain_path: Path,
+    ) -> GeneratedProblem:
+        simulator = _Walker(domain, problem)
+        initial = simulator.initial_state()
+        if "total-cost" in simulator.functions and ("total-cost",) not in initial.values:
+            # Un problema que no inicializa el coste: para el paseo, empieza en 0.
+            initial = simulator.make_state(initial.atoms, {**initial.values, ("total-cost",): 0})
         goal_predicates = {atom[0] for atom in _goal_atoms(problem.goal)}
         rng = random.Random(seed)
         for _attempt in range(20):  # si el paseo no cambia nada, otro intento
@@ -392,14 +272,16 @@ class RandomWalkGenerator(Generator):
                 states, plan = _walk(simulator, initial, params["steps"], rng)
                 start = initial
             final = states[-1]
-            changed = sorted(a for a in final - start if a[0] in simulator.fluent_predicates)
+            changed = sorted(
+                a for a in final.atoms - start.atoms if a[0] in simulator.fluent_predicates
+            )
             if changed:
                 break
         else:
             raise GeneratorError(
                 _(
                     "los paseos desde {base} no cambian nada (¿no hay acciones aplicables?)",
-                    base=base.id,
+                    base=base_id,
                 )
             )
         # Primero los predicados del objetivo del problema base; si no llegan, los demás.
@@ -408,12 +290,12 @@ class RandomWalkGenerator(Generator):
         goals = rng.sample(preferred, min(params["goals"], len(preferred)))
         goals += rng.sample(others, min(params["goals"] - len(goals), len(others)))
         text = _write(
-            name, domain, problem, start if params["mode"] == "both" else None, sorted(goals)
+            name, domain, problem, start.atoms if params["mode"] == "both" else None, sorted(goals)
         )
-        notes = {"base": base.id, "plan-length": len(plan)}
+        notes = {"base": base_id, "plan-length": len(plan)}
         comment = _("{count} acciones (paseo aleatorio)", count=len(plan))
         plan_text = "\n".join(plan) + f"\n; {comment}\n"
-        return GeneratedProblem(text, plan_text, notes, domain=base.domain)
+        return GeneratedProblem(text, plan_text, notes, domain=domain_path)
 
 
 def _goal_atoms(node: SExpr | None) -> Iterator[Atom]:
@@ -428,7 +310,11 @@ def _goal_atoms(node: SExpr | None) -> Iterator[Atom]:
 
 
 def _write(
-    name: str, domain: Domain, problem: Problem, new_init: set[Atom] | None, goals: list[Atom]
+    name: str,
+    domain: Domain,
+    problem: Problem,
+    new_init: frozenset[Atom] | None,
+    goals: list[Atom],
 ) -> str:
     lines = [
         "; " + _("Generado por paseo aleatorio desde el problema '{name}'", name=problem.name),

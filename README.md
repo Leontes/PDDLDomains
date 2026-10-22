@@ -3,7 +3,8 @@
 **English** · [Español](README.es.md)
 
 A collection of PDDL domains and problems with tools to classify them, build test datasets,
-check them for errors, validate plans with VAL and generate new random problems.
+check them for errors, validate plans with VAL, generate new random problems and obtain plan
+traces.
 
 - **Catalog** (`dominios/`): 41 collections and 737 problems, from STRIPS to PDDL+, each
   stored once in the folder of its origin (`ipc-2011/barman-sequential-satisficing`,
@@ -23,6 +24,9 @@ check them for errors, validate plans with VAL and generate new random problems.
 - **Generators**: 25 random problem generators (written for this repository, from
   pddl-generators and from IPC 2023), including a generic one based on random walks that
   works for any classical domain and also produces a plan for each problem.
+- **Traces**: the states a plan goes through, in JSON, with true, false or unknown values
+  and numeric fluents, reproducibly degradable (gaps, missing states and noise) and with
+  their provenance.
 
 ## Installation
 
@@ -73,6 +77,9 @@ pddldomains generate counters -n 10 -p counters=4..12          # random range
 pddldomains generate barman -p cocktails=3,5,7 -n 2            # series: 2 per value
 pddldomains generate random-walk -p collection=sokoban-sequential-satisficing -n 5
 
+pddldomains trace --task rubiks-cube/p05 -o trace.json      # states of the reference plan
+pddldomains trace domain.pddl p01.pddl p01.plan --missing 30 --noise 5 --seed 7
+
 pddldomains sources check                        # compare with the original files
 pddldomains index                                # regenerate dominios/INDEX.md and INDICE.md
 ```
@@ -115,6 +122,7 @@ enough: the paths point to this repository's catalog (or to `$PDDL_DOMINIOS`).
 - [VAL](docs/en/val.md): building, validation and known quirks.
 - [Generators](docs/en/generators.md): the generators, their parameters and why their
   problems are solvable.
+- [Traces](docs/en/traces.md): the trace format, the degradation and the simulator.
 
 ## Development
 

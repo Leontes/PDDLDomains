@@ -95,8 +95,8 @@ nothing from `tools/`.
 ### Random walk (`generators/walk.py`)
 
 `random-walk` works for any classical collection without derived predicates (STRIPS and
-ADL: types, negation, disjunction, quantifiers, equality and conditional effects; costs are
-ignored when simulating):
+ADL: types, negation, disjunction, quantifiers, equality and conditional effects; costs do
+not influence the walk):
 
 1. it starts from a problem of the collection (`base`, by default the smallest): its
    objects and its initial state;
@@ -105,8 +105,9 @@ ignored when simulating):
    predicates of the base problem's goal (`on` in blocks, `at-goal` in sokoban…).
 
 The walk is a valid plan (saved as `pNN.plan` and validated with VAL), so the problem is
-solvable. With `mode=both` the initial state changes too: a walk twice as long is taken and
-the state halfway becomes the initial one.
+solvable. The actions are applied with the same simulator as
+[`trace`](traces.md#the-simulator). With `mode=both` the initial state changes too: a walk
+twice as long is taken and the state halfway becomes the initial one.
 
 Random-walk goals are usually easier than the IPC ones: they are meant to provide many
 variants of a domain, not to benchmark.

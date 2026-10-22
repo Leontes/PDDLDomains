@@ -14,6 +14,8 @@ Subcomandos:
 * ``sources {check,diff,fetch}``: compara el catálogo con los ficheros originales y trae
   más problemas del origen.
 * ``generate GENERADOR``: genera problemas aleatorios (``generate --list`` los enumera).
+* ``trace DOMINIO PROBLEMA PLAN``: la traza de un plan (sus estados) en JSON, degradada si se
+  pide.
 
 Los textos salen en inglés o en español (``--lang``, ver :mod:`pddldomains.i18n`).
 
@@ -57,6 +59,7 @@ from pddldomains.index import INDEX_FILES, render_index
 from pddldomains.lint import Finding, lint_domain, lint_problem, summarize
 from pddldomains.pddl import Domain
 from pddldomains.sources import SourceError
+from pddldomains.traces import MAX_ATOMS, UNIVERSES
 
 #: Código de salida cuando hay hallazgos.
 EXIT_FINDINGS = 1
@@ -379,7 +382,104 @@ def build_parser() -> argparse.ArgumentParser:
     from pddldomains.generators.cli import add_generate_parser
 
     add_generate_parser(commands)
+
+    trace = commands.add_parser(
+        "trace",
+        help=_("traza de un plan: sus estados, en JSON"),
+        description=_(
+            "Ejecuta un plan y escribe en JSON los estados por los que pasa, con las acciones. "
+            "Puede quitar información (huecos), estados enteros y añadir ruido, de forma "
+            "reproducible. Ver docs/es/trazas.md."
+        ),
+    )
+    trace.add_argument(
+        "files", nargs="*", metavar=_("FICHERO"), help=_("DOMINIO PROBLEMA PLAN, o PLAN con --task")
+    )
+    trace.add_argument(
+        "--task",
+        help=_(
+            "<colección>/<problema> del catálogo en lugar de DOMINIO PROBLEMA "
+            "(sin PLAN, el plan de referencia)"
+        ),
+    )
+    trace.add_argument(
+        "-o", "--output", type=Path, metavar=_("FICHERO"), help=_("dónde escribir la traza")
+    )
+    trace.add_argument("--compact", action="store_true", help=_("JSON en una sola línea"))
+    degradation = trace.add_argument_group(_("degradación (porcentajes de 0 a 100)"))
+    degradation.add_argument(
+        "--missing",
+        type=_percent,
+        default=0.0,
+        metavar="%",
+        help=_("átomos y valores numéricos de cada estado que pasan a ser desconocidos"),
+    )
+    degradation.add_argument(
+        "--missing-states",
+        type=_percent,
+        default=0.0,
+        metavar="%",
+        help=_("estados que faltan enteros"),
+    )
+    degradation.add_argument(
+        "--noise",
+        type=_percent,
+        default=0.0,
+        metavar="%",
+        help=_("átomos observados que se invierten y valores numéricos que se alteran"),
+    )
+    degradation.add_argument(
+        "--numeric-noise",
+        type=float,
+        default=10.0,
+        metavar="%",
+        help=_("cuánto se altera como mucho un valor numérico con ruido (por defecto, 10)"),
+    )
+    degradation.add_argument(
+        "--seed", type=int, default=0, help=_("semilla de la degradación (por defecto, 0)")
+    )
+    trace.add_argument(
+        "--world",
+        choices=["closed", "open"],
+        default="closed",
+        help=_("closed: no se listan los átomos falsos (por defecto); open: se listan"),
+    )
+    trace.add_argument(
+        "--universe",
+        choices=UNIVERSES,
+        default="dynamic",
+        help=_(
+            "átomos de los que se da el valor: dynamic, los de predicados que cambian más los "
+            "estáticos ciertos al principio (por defecto); typed, todos los que encajan con los "
+            "tipos"
+        ),
+    )
+    trace.add_argument("--planner", help=_("planificador que dio el plan (procedencia)"))
+    trace.add_argument("--planner-config", help=_("configuración del planificador (procedencia)"))
+    trace.add_argument("--planner-seed", type=int, help=_("semilla del planificador (procedencia)"))
+    trace.add_argument(
+        "--val", action="store_true", help=_("valida además el plan con VAL y anota su veredicto")
+    )
+    trace.add_argument(
+        "--max-atoms",
+        type=int,
+        default=MAX_ATOMS,
+        metavar="N",
+        help=_("átomos posibles como mucho (por defecto, {default})", default=MAX_ATOMS),
+    )
     return parser
+
+
+def _percent(value: str) -> float:
+    try:
+        number = float(value)
+    except ValueError:
+        number = -1.0
+    if not 0 <= number <= 100:
+        raise argparse.ArgumentTypeError(
+            _("se esperaba un porcentaje de 0 a 100: '{value}'", value=value)
+        )
+    return number
 
 
 # --- Comandos ----------------------------------------------------------------------------
@@ -809,6 +909,78 @@ def _reference_tasks(catalog: Catalog, target: str) -> list[Task]:
     return [t for t in tasks if t.plan is not None]
 
 
+# --- trace -------------------------------------------------------------------------------
+
+
+def cmd_trace(args: argparse.Namespace) -> int:
+    from pddldomains.traces import (
+        Degradation,
+        Provenance,
+        TraceError,
+        generate_trace,
+        write_trace,
+    )
+
+    catalog = None
+    if args.task:
+        catalog = _catalog(args)
+        task = catalog.find_task(args.task)
+        if len(args.files) > 1:
+            raise CatalogError(_("con --task se espera como mucho un plan"))
+        if args.files:
+            plan = Path(args.files[0])
+        elif task.plan is not None:
+            plan = task.plan
+        else:
+            raise CatalogError(_("'{task}' no tiene plan de referencia: dé el plan", task=task.id))
+        domain, problem = task.domain, task.problem
+    elif len(args.files) == 3:
+        domain, problem, plan = (Path(f) for f in args.files)
+        if args.catalog:
+            catalog = _catalog(args)
+    else:
+        raise CatalogError(_("se esperaba DOMINIO PROBLEMA PLAN, o --task <colección>/<problema>"))
+    degradation = Degradation(
+        missing=args.missing,
+        missing_states=args.missing_states,
+        noise=args.noise,
+        numeric_noise=args.numeric_noise,
+        seed=args.seed,
+    )
+    provenance = Provenance(args.planner, args.planner_config, args.planner_seed)
+    try:
+        trace = generate_trace(
+            domain,
+            problem,
+            plan,
+            degradation=degradation,
+            world=args.world,
+            universe=args.universe,
+            provenance=provenance,
+            max_atoms=args.max_atoms,
+            validate_with_val=args.val,
+            catalog=catalog,
+        )
+    except TraceError as error:
+        print(f"error: {plan}: {error}", file=sys.stderr)
+        return EXIT_INVALID_INPUT
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        with args.output.open("w", encoding="utf-8") as stream:
+            write_trace(trace, stream, compact=args.compact)
+    else:
+        write_trace(trace, sys.stdout, compact=args.compact)
+    execution = trace["execution"]
+    if not execution["goal_reached"]:
+        print(_("aviso: el plan no alcanza el objetivo"), file=sys.stderr)
+    if execution["val"] not in (None, "valid"):
+        print(
+            _("aviso: VAL no da el plan por válido ({verdict})", verdict=execution["val"]),
+            file=sys.stderr,
+        )
+    return 0 if execution["goal_reached"] and execution["val"] in (None, "valid") else EXIT_FINDINGS
+
+
 # --- sources -----------------------------------------------------------------------------
 
 
@@ -896,6 +1068,7 @@ _COMMANDS = {
     "lint": cmd_lint,
     "validate": cmd_validate,
     "sources": cmd_sources,
+    "trace": cmd_trace,
 }
 
 

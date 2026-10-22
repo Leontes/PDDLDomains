@@ -3,7 +3,8 @@
 [English](README.md) · **Español**
 
 Colección de dominios y problemas PDDL con herramientas para clasificarlos, crear datasets
-de prueba, revisarlos, validar planes con VAL y generar problemas nuevos al azar.
+de prueba, revisarlos, validar planes con VAL, generar problemas nuevos al azar y obtener las
+trazas de los planes.
 
 - **Catálogo** (`dominios/`): 41 colecciones y 737 problemas, de STRIPS a PDDL+, cada uno
   una sola vez y en la carpeta de su origen (`ipc-2011/barman-sequential-satisficing`,
@@ -24,6 +25,9 @@ de prueba, revisarlos, validar planes con VAL y generar problemas nuevos al azar
 - **Generadores**: 25 generadores de problemas aleatorios (propios, de pddl-generators y de
   la IPC 2023), entre ellos uno genérico por paseo aleatorio que sirve para cualquier
   dominio clásico y da un plan de cada problema.
+- **Trazas**: los estados por los que pasa un plan, en JSON, con valores cierto, falso o
+  desconocido y fluentes numéricos, degradables de forma reproducible (huecos, estados que
+  faltan y ruido) y con su procedencia.
 
 ## Instalación
 
@@ -79,6 +83,9 @@ pddldomains generate counters -n 10 -p counters=4..12          # rango aleatorio
 pddldomains generate barman -p cocktails=3,5,7 -n 2            # serie: 2 por valor
 pddldomains generate random-walk -p collection=sokoban-sequential-satisficing -n 5
 
+pddldomains trace --task rubiks-cube/p05 -o traza.json      # estados del plan de referencia
+pddldomains trace dominio.pddl p01.pddl p01.plan --missing 30 --noise 5 --seed 7
+
 pddldomains sources check                        # compara con los ficheros originales
 pddldomains index                                # regenera dominios/INDEX.md e INDICE.md
 ```
@@ -122,6 +129,7 @@ rutas apuntan al catálogo de este repositorio (o al de `$PDDL_DOMINIOS`).
 - [VAL](docs/es/val.md): compilación, validación y rarezas conocidas.
 - [Generadores](docs/es/generadores.md): los generadores, sus parámetros y por qué sus
   problemas tienen solución.
+- [Trazas](docs/es/trazas.md): el formato de las trazas, la degradación y el simulador.
 
 ## Desarrollo
 

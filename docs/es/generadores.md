@@ -97,7 +97,7 @@ nada de `tools/`.
 
 `random-walk` sirve para cualquier colección clásica sin predicados derivados (STRIPS y
 ADL: tipos, negación, disyunción, cuantificadores, igualdad y efectos condicionales; los
-costes se ignoran al simular):
+costes no influyen en el paseo):
 
 1. parte de un problema de la colección (`base`, por defecto el más pequeño): sus objetos y
    su estado inicial;
@@ -106,8 +106,9 @@ costes se ignoran al simular):
    del objetivo del problema base (`on` en blocks, `at-goal` en sokoban…).
 
 El paseo es un plan válido (se guarda como `pNN.plan` y se valida con VAL), así que el
-problema tiene solución. Con `mode=both` cambia también el estado inicial: se da un paseo
-del doble de largo y el estado de la mitad pasa a ser el inicial.
+problema tiene solución. Las acciones se aplican con el mismo simulador que
+[`trace`](trazas.md#el-simulador). Con `mode=both` cambia también el estado inicial: se da
+un paseo del doble de largo y el estado de la mitad pasa a ser el inicial.
 
 Los objetivos de un paseo suelen ser más fáciles que los de la IPC: sirven para tener muchas
 variantes de un dominio, no para medir.
