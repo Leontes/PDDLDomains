@@ -21,9 +21,11 @@ Degradación (:class:`Degradation`), aplicada a las observaciones y anotada en l
   alza o a la baja).
 
 Los porcentajes se aplican exactamente en cada estado (redondeando) y son reproducibles: cada
-elección usa su propia semilla, derivada de ``seed``, del tipo de degradación y del estado.
-Por eso las degradaciones están anidadas: con la misma semilla, los huecos de un 30 %
-incluyen los de un 20 %, y lo mismo con el ruido y los estados que faltan.
+elección usa su propia semilla, derivada de ``seed``, de la ejecución (el problema y el plan),
+del tipo de degradación y del estado. Por eso las degradaciones están anidadas: con la misma
+semilla, los huecos de un 30 % incluyen los de un 20 %, y lo mismo con el ruido y los estados
+que faltan. Y por eso, con la misma semilla, cada problema y cada plan tienen su propia
+degradación: no se repite en las trazas de un conjunto.
 
 Las acciones no se degradan.
 """
@@ -270,34 +272,54 @@ def atom_universe(
     return sorted(atoms)
 
 
-def _rng(seed: int, purpose: str, state: int) -> random.Random:
+def _identity(execution: Execution) -> str:
+    """La huella de una ejecución: el dominio, el problema (sus objetos y su estado inicial) y el
+    plan. Entra en la semilla de cada elección para que dos trazas con la misma semilla no
+    tengan la misma degradación (con el mismo universo, serían los mismos átomos en cada paso).
+    No depende de las rutas de los ficheros."""
+    initial = execution.states[0]
+    lines = [execution.domain.name, execution.problem.name]
+    lines += sorted(f"{name} {kind!r}" for name, kind in execution.simulator.object_types.items())
+    lines += sorted(atom_text(atom) for atom in initial.facts)
+    lines += sorted(f"{atom_text(term)} {value!r}" for term, value in initial.values.items())
+    lines += [f"{step.name} {step.arguments!r} {step.time!r}" for step in execution.steps]
+    return hashlib.sha256("\n".join(lines).encode()).hexdigest()
+
+
+def _rng(seed: int, trace: str, purpose: str, state: int) -> random.Random:
     # Una semilla de texto se convierte en entero con SHA-512: la misma en cualquier ejecución.
-    return random.Random(f"{seed}:{purpose}:{state}")
+    return random.Random(f"{seed}:{trace}:{purpose}:{state}")
 
 
-def _keys(count: int, seed: int, purpose: str, state: int) -> list[float]:
+def _keys(count: int, seed: int, trace: str, purpose: str, state: int) -> list[float]:
     """Una clave aleatoria por elemento; los de clave más baja son los elegidos.
 
     Se usa ``random()``, cuya secuencia Python garantiza entre versiones (``randbytes`` y
     ``getrandbits``, más rápidos, no).
     """
-    uniform = _rng(seed, purpose, state).random
+    uniform = _rng(seed, trace, purpose, state).random
     return [uniform() for _index in range(count)]
 
 
 def _choose(
-    pool: Sequence[int], size: int, percent: float, seed: int, purpose: str, state: int
+    pool: Sequence[int],
+    size: int,
+    percent: float,
+    seed: int,
+    trace: str,
+    purpose: str,
+    state: int,
 ) -> set[int]:
     """Los ``percent`` por ciento de ``pool`` (redondeando) de clave más baja.
 
-    ``pool`` son índices de 0 a ``size``. Las claves dependen solo de la semilla, de
-    ``purpose`` y del estado, no de ``pool`` ni de ``percent``: por eso las elecciones con
-    más porcentaje incluyen las de menos.
+    ``pool`` son índices de 0 a ``size``. Las claves dependen solo de la semilla, de la
+    ejecución (``trace``, su :func:`_identity`), de ``purpose`` y del estado, no de ``pool`` ni
+    de ``percent``: por eso las elecciones con más porcentaje incluyen las de menos.
     """
     count = math.floor(len(pool) * percent / 100 + 0.5)
     if count == 0:
         return set()
-    keys = _keys(size, seed, purpose, state)
+    keys = _keys(size, seed, trace, purpose, state)
     return set(sorted(pool, key=keys.__getitem__)[:count])
 
 
@@ -341,11 +363,12 @@ def build_trace(
         sorted({term for state in execution.states for term in state.values}),
         degradation,
         world,
+        _identity(execution),
     )
     seed = degradation.seed
     count = len(execution.states)
     missing_states = _choose(
-        range(count), count, degradation.missing_states, seed, "missing-states", 0
+        range(count), count, degradation.missing_states, seed, observer.trace, "missing-states", 0
     )
     counters = observer.counters
     counters.missing_states = sorted(missing_states)
@@ -426,7 +449,12 @@ class _Observer:
     """
 
     def __init__(
-        self, atoms: list[Atom], terms: list[Term], degradation: Degradation, world: str
+        self,
+        atoms: list[Atom],
+        terms: list[Term],
+        degradation: Degradation,
+        world: str,
+        trace: str,
     ) -> None:
         self.atoms = atoms
         self.texts = [atom_text(atom) for atom in atoms]  # compartidos por todos los estados
@@ -434,15 +462,16 @@ class _Observer:
         self.term_texts = [atom_text(term) for term in terms]
         self.degradation = degradation
         self.world = world
+        self.trace = trace  # la huella de la ejecución, para las semillas (ver _identity)
         self.counters = _Counters()
 
     def observe(self, state: State, index: int) -> dict[str, Any]:
         """La observación del estado ``index``."""
-        degradation, seed = self.degradation, self.degradation.seed
+        degradation, seed, trace = self.degradation, self.degradation.seed, self.trace
         size = len(self.atoms)
-        hidden = _choose(range(size), size, degradation.missing, seed, "missing", index)
+        hidden = _choose(range(size), size, degradation.missing, seed, trace, "missing", index)
         observed = [i for i in range(size) if i not in hidden] if hidden else range(size)
-        flipped = _choose(observed, size, degradation.noise, seed, "noise", index)
+        flipped = _choose(observed, size, degradation.noise, seed, trace, "noise", index)
         self.counters.hidden_atoms += len(hidden)
         self.counters.flipped_atoms += len(flipped)
         facts = state.facts
@@ -456,10 +485,10 @@ class _Observer:
                 false.append(self.texts[i])
         size = len(self.terms)
         defined = [i for i, term in enumerate(self.terms) if term in state.values]
-        hidden = _choose(defined, size, degradation.missing, seed, "missing-values", index)
+        hidden = _choose(defined, size, degradation.missing, seed, trace, "missing-values", index)
         observed = [i for i in defined if i not in hidden]
-        perturbed = _choose(observed, size, degradation.noise, seed, "noise-values", index)
-        factors = _keys(size, seed, "noise-factors", index) if perturbed else []
+        perturbed = _choose(observed, size, degradation.noise, seed, trace, "noise-values", index)
+        factors = _keys(size, seed, trace, "noise-factors", index) if perturbed else []
         self.counters.hidden_values += len(hidden)
         self.counters.perturbed_values += len(perturbed)
         values: dict[str, int | float] = {}

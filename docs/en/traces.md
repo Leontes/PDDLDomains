@@ -119,8 +119,12 @@ actions.
   `--missing 20`, every state has exactly 6 unknown atoms. `degradation` records how many
   atoms and values were hidden, flipped or altered in total, and which states are missing.
 - **Reproducible**: with the same files and the same seed, the trace is identical. Each
-  choice (gaps, noise, states) uses its own random sequence, derived from the seed and the
-  state, with `random()`, whose sequence Python guarantees across versions.
+  choice (gaps, noise, states) uses its own random sequence, derived from the seed, the
+  execution (the problem, its initial state and the plan), the kind of choice and the state,
+  with `random()`, whose sequence Python guarantees across versions.
+- **Independent**: with the same seed, each problem and each plan get their own degradation.
+  A set of traces can be generated with a single seed without the same gaps or the same
+  noise repeating at each step.
 - **Nested**: with the same seed, the gaps of `--missing 30` include those of
   `--missing 20`, and the same holds for missing states and for noise (with the same gaps).
   This helps study how a method degrades as information is removed, without everything

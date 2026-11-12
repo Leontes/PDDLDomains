@@ -213,6 +213,20 @@ def test_reproducible_and_nested() -> None:
         assert less <= more
 
 
+def test_each_trace_has_its_own_degradation() -> None:
+    # Con la misma semilla y el mismo universo, otro problema u otro plan no repiten los huecos
+    # ni el ruido de cada paso: la semilla de cada elección incluye la ejecución.
+    other = BLOCKS_PROBLEM.replace("(problem tres)", "(problem otro)")
+    degradation = Degradation(missing=40, noise=20, seed=1)
+    first = trace_of(BLOCKS, BLOCKS_PROBLEM, BLOCKS_PLAN, degradation, world="open")
+    renamed = trace_of(BLOCKS, other, BLOCKS_PLAN, degradation, world="open")
+    assert first["universe"] == renamed["universe"]
+    assert hidden_sets(first) != hidden_sets(renamed)
+    assert first == trace_of(BLOCKS, BLOCKS_PROBLEM, BLOCKS_PLAN, degradation, world="open")
+    shorter = trace_of(BLOCKS, BLOCKS_PROBLEM, "(pick-up b)\n(stack b c)\n", degradation)
+    assert hidden_sets(shorter) != hidden_sets(first)[:3]
+
+
 def test_missing_states() -> None:
     plan = "(toggle i1)\n" * 9
     trace = trace_of(ADL, ADL_PROBLEM, plan, Degradation(missing_states=30, seed=1))

@@ -120,7 +120,11 @@ instantáneas.
   átomos y valores se han ocultado, invertido o alterado en total, y qué estados faltan.
 - **Reproducible**: con los mismos ficheros y la misma semilla, la traza es idéntica. Cada
   elección (huecos, ruido, estados) usa su propia secuencia aleatoria, derivada de la
-  semilla y del estado, con `random()`, cuya secuencia Python garantiza entre versiones.
+  semilla, de la ejecución (el problema, su estado inicial y el plan), del tipo de elección y
+  del estado, con `random()`, cuya secuencia Python garantiza entre versiones.
+- **Independiente**: con la misma semilla, cada problema y cada plan tienen su propia
+  degradación. Un conjunto de trazas puede generarse con una sola semilla sin que se repitan
+  los mismos huecos ni el mismo ruido en cada paso.
 - **Anidada**: con la misma semilla, los huecos de `--missing 30` incluyen los de
   `--missing 20`, y lo mismo con los estados que faltan y con el ruido (con los mismos
   huecos). Sirve para estudiar cómo empeora un método al quitarle información, sin que
